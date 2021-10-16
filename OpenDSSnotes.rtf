@@ -1,0 +1,188 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;\f2\fnil\fcharset0 Monaco;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\csgray\c0;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
+\margl1440\margr1440\vieww23520\viewh15780\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\
+\
+\
+\
+\
+\
+\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \ul \ulc0 Installing openDSS for Python\ulnone \
+Entering the following in terminal (requires python3, I believe):\
+pip install OpenDSSDirect.py\
+(from https://pypi.org/project/OpenDSSDirect.py/)\
+also:\
+pip3 install --upgrade pandas\
+or\
+conda update pandas\
+\
+\
+Also necessary for running the SPBC code:\
+pip install networkx\
+(this code is one way in which a graph (eg electric network) can be stored. In the SPBC code it is used to keep track of the network and calculate the per unit voltage bases. While netowrkx is convenient and currently in use in our code, there are other ways to keep track of networks, so networkx is not inherently necessary for power flow applications.)\
+\
+I run my python code from the terminal. 
+\f1\b If someone is able to translate this DSS code to a Jupyter Notebook
+\f0\b0 , that would be awesome.\
+\
+within python, DSS commands are run one of the two following ways: \
+1) Using the following syntax:\
+dss.run_command(\'93__(DSS command here)___\'94)\
+The DSS commands must be something that DSS understands, obviously. If the command is not known, python will not throw and error. Instead it will just print \'93
+\f2\fs20 \cf2 \CocoaLigature0 Unknown Command:_____\'94.
+\f0\fs24 \cf0 \CocoaLigature1 \
+2) Using the following syntax:\
+dss.Circuit.SetActiveBus(bus.name)  or dummyvar = dss.Circuit.SetActiveElement('Line.' + iline.name)\
+(I\'92m not sure why dss supports/requires this second method for certain tasks, or how it works really.)\
+\
+\
+\
+\
+\
+\ul Interpreting the DSS results\ulnone \
+\
+The OpenDSS python plugin does not automatically output anything, so any outputs in the terminal window have are due to code that the user has written. The introDSSsim code includes code to print the output to the terminal window, plot the output, and print the output to an excel file in a \'93Results\'94 folder.\
+\
+\
+\
+\
+\
+\ul introtestDSS.py code\ulnone \
+\
+The introtestDSS.py code is a simple verification that the power flow works for a network with two buses and a single line connecting them (the simplest possible network). \
+\
+The commented out code tests what happens when the kVbase is changed. This commented out code is intended to demonstrate a weird feature of DSS: when voltages are outside of the specified ranges, DSS switches the constant power commands to constant impedance equivalents.\
+\
+\
+\
+\
+\
+\ul IntroDSSsim code\ulnone \
+\
+The IntroDSSsim code is a time series simulation that uses some of the functions that were written for the SPBC code. I wrote main.py as a piece of tutorial code. It uses functions from dss_functions and setup.py, which are code files copied directly from the SPBC code. A bit of history on the SPBC code: it was first written by an older PhD student, Kyle Brady, then subsequently adjusted by Jasper and myself. So you will have to excuse some of the internal and inter-generational dialogue in the comments of the code.\
+\
+The three important python files in introDSSsim are: \
+\
+The 
+\f1\b main.py
+\f0\b0  file loads the appropriate network model and load profiles, calls the necessary functions for DSS to run power flow in each timestep, and outputs/saves/plots the result.\
+\
+The 
+\f1\b setup.py
+\f0\b0  function contains the necessary functions to set up a \'93feeder\'94 object. For historical reasons, the feeder object contains the feeder, the load profiles and actuator limits, and the optimization variables (in the SPBC code). In future code iterations, it would make sense to split these up into different objects.\
+\
+The 
+\f1\b dss_functions.py
+\f0\b0  folder contains the functions necessary to set up a DSS power flow, solve the power flow, and save the power flow. There are also functions for calculating the Ybus matrix, however those are not necessary for us at this time.\
+\
+There are a number of functions within setup.py and dss_functions.py that are not critical for running main.py. For now I would only worrying about understanding the functions that are necessary to understand how main.py works.\
+\
+In a first pass of understanding how openDSS works, the code corresponding to (at least) the following topics can be ignored in setup.py and dss_functions.py:\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural\partightenfactor0
+\ls1\ilvl0\cf0 {\listtext	\uc0\u8226 	}The basekV (propogate base up and down) in setup.py\
+{\listtext	\uc0\u8226 	}The shunts, shunt capacitors, transformer connections and switches in setup.py\
+{\listtext	\uc0\u8226 	}The Ybus or Zkeff matrices in dss_functions.py\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+In main.py there are a number of TASKS to help get up to speed on DSS and how we use it with our models. Step through each test case and try to answer the questions (before looking at the answers).\
+\
+\
+\
+\
+\
+\ul Excel (model and load) file structures\ulnone \
+\
+Within the IntroDSSsim folder there is also a number of network models (in the form of excel files), and accompanying load profiles (also in the form of excel files). Changing the \'93testcase\'94 flag in main.py changes which model is loaded into DSS. \
+\
+The network files have multiple tabs. The \'93multiphase Line\'94 tab contains the line impedance information necessary for creating the 3x3 impedance matrix for three phase unbalanced lines. The other tabs contain other relevant information such as transformer ratios and network power base values.\
+\
+The load files have a single sheet. Each row corresponds to a timestep. Each column corresponds to a given phase of a given node. The \'93LD\'94 prefix indicates a load. The loadbuilderPQ function in Setup.py (SPBC) code reads the LD columns in at each timestep and specifies the corresponding load in DSS. The \'93PV_KW\'94 prefix prefix indicates a controllable generator (solar or battery, it\'92s called \'93PV\'94 because the initial implementations were for solar). The actbuilder function in Setup.py (SPBC) code reads the PV_KW columns in at each timestep and creates actuator limits in DSS (this is done in the constraints file in the SPBC code, which wasn\'92t included in this intro code).\
+\
+\
+\
+\
+\
+\
+\ul Misc DSS Notes\ulnone \
+\
+Powers are specified in terms of kW, and currents in terms of amps, so there is a necessary adjustment of 1000 when calculating one from the other.\
+\
+openDSS does not return values in terms of per unit.\
+\
+openDSS does a ridiculous thing when votlages are outside of the specified ranges, DSS switches the constant power commands to constant impedance equivalents. (No idea why.)\
+\
+Unfortunately most of the DSS literature is based around using the DSS program, rather than the Python plugin. So I\'92ve found that the openDSS manual is pretty useless, and the primer is slightly more useful.\
+\
+openDSS doesn\'92t solve powerflow, it iteratively solves I = YV, changing I each time based on the previous iterations V to match the specified power injection characteristics. This allows for other types of load than PQ and PV.\
+\
+If voltage is outside of pu voltage limits, constant power loads are automatically converted to constant impedance loads. DSS does not throw any warnings when it does this, which is very sneaky. \
+\
+Admittance matrices are 3 phase admittance matrices. 3 phase admittance matrices require the true angles (so the angles will be separated by approximately +120 and -120 degrees).\
+\
+Sample commands (to get voltages and currents):\
+bus1V = np.asarray(dss.Bus.Voltages()).view(dtype=complex)\
+lineI = -np.asarray(dss.CktElement.Currents()).view(dtype=complex)[3:6]\
+\
+\
+\
+\
+\
+\ul Debugging Notes\ulnone \
+\
+When you are hung up on something, print statements are you friend. Use print statements to confirm the pieces of code are doing what you would expect them to do.\
+\
+Working with power flow solvers can be pretty frustrating/confusing when they are not working. The approaches I have found that are useful are:\
+\pard\tx220\tx720\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\li720\fi-720\pardirnatural\partightenfactor0
+\ls2\ilvl0\cf0 {\listtext	\uc0\u8226 	}Building simple test circuits to sanity check my approach\
+{\listtext	\uc0\u8226 	}Verifying that the voltages/currents/powers are reasonable using V = IZ and S = VI*\
+{\listtext	\uc0\u8226 	}Using small power injections to start (remember large loads will result in power flow not converging)\
+{\listtext	\uc0\u8226 	}Checking that the per unit system is being used correctly\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+About 50% of the time I am having an error it has been because I messed up the per unit calculations somewhere. If values are not what you might expect, determining if the per unit system is consistent throughout the code is a good place to start.\
+\
+\
+\
+\
+\
+\
+\
+\
+\ul SPBC optimization variables\ulnone  (useful later):\
+\
+actuator.Pgen and actuator.Qgen: P and Q injections\
+line.P_linopt and line.Q_linopt: P and Q flows on a given line\
+bus.Vmagsq_linopt and bus.Vang_linop: Voltage mag (squared) and angle at each bus\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+}
