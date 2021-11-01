@@ -18,6 +18,7 @@ from pprint import pprint
 import matplotlib.pyplot as plt
 import sys
 import os
+import re 
 
 from setup import *
 import opendssdirect as dss
@@ -129,30 +130,74 @@ def run(feeder_name, hi_node, lo_node):
 
     ################################################################################
 
+    common_nodes = [150, 149, 1, 7, 8, 13]
+    high_nodes = [18, 135, 35, 40, 42, 44, 47, 48]
+    low_nodes = [152, 52, 53, 54, 57, 60, 160, 67, 72, 76, 77, 78, 80, 81, 82, 83]
+    
+    voltage_output_df = pd.DataFrame()
+    
+    common_voltage_mag_dict = {}
+    common_voltage_ang_dict = {}
+
+    low_voltage_mag_dict = {}
+    low_voltage_ang_dict = {}
+
+    high_voltage_mag_dict = {}
+    high_voltage_ang_dict = {}
+
     for ts in range(0,timesteps):
         # print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        # print(f'timestep {ts}')
         #run power flow:
         DSS_run3phasePF(myfeeder,ts, loud)
         savePFresults(myfeeder,ts,alarm)  
 
         for key,bus in myfeeder.busdict.items():
+            bus_no = re.findall(r'\d+', bus.name)[0]
+            if (int(bus_no) in high_nodes):
+                high_voltage_mag_dict[bus_no] = bus.Vmag_NL[:,ts]/(bus.kVbase_phg*1000)
+                high_voltage_ang_dict[bus_no] = bus.Vang_NL[:,ts]
+
+            if (int(bus_no) in low_nodes):
+                low_voltage_mag_dict[bus_no] = bus.Vmag_NL[:,ts]/(bus.kVbase_phg*1000)
+                low_voltage_ang_dict[bus_no] = bus.Vang_NL[:,ts]
+
+            if (int(bus_no) in common_nodes):
+                common_voltage_mag_dict[bus_no] = bus.Vmag_NL[:,ts]/(bus.kVbase_phg*1000)
+                common_voltage_ang_dict[bus_no] = bus.Vang_NL[:,ts]
+
             if (bus.name == f"bus_{hi_node}" or bus.name == f"bus_{lo_node}"):
                 # print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
                 # print(f'bus.name {bus.name}')
                 # print(f'Vmag: {bus.Vmag_NL[:,ts]/(bus.kVbase_phg*1000)}')
                 # print(f'Vang: {bus.Vang_NL[:,ts]}')
-
                 # Save results of hunting
                 results[bus.name]["V_mag"] = bus.Vmag_NL[:,ts]/(bus.kVbase_phg*1000)
                 results[bus.name]["V_angle"] = bus.Vang_NL[:,ts]
-            # print(f'Imag: {bus.Imag_NL}')
-            # print(f'Iang: {bus.Iang_NL}')
+
             Ibase = bus.kVAbase/bus.kVbase_phg #phg stands for phase to ground (rather than phase to phase)
             SinjCalc = bus.Vcomp[:,ts]/(bus.kVbase_phg*1000) * np.conjugate(bus.Icomp[:,ts]/Ibase) * bus.kVAbase #power in kVARs
             # print(f'PinjCalc: {np.real(SinjCalc)}')
             # print(f'QinjCalc: {np.imag(SinjCalc)}')
 
+    len_common = len(list(common_voltage_mag_dict.keys()))
+    len_high = len(list(high_voltage_mag_dict.keys()))
+    len_low = len(list(low_voltage_mag_dict.keys()))
+
+    max_len = max(max(len_low, len_high), len_common)
+    voltage_output_df["index"] = pd.Series(np.arange(0, max_len))
+    voltage_output_df["common_nodes"] = pd.Series(list(common_voltage_mag_dict.keys()))
+    voltage_output_df["common_Vmag"] = pd.Series(list(common_voltage_mag_dict.values()))
+    voltage_output_df["common_Vang"] = pd.Series(list(common_voltage_ang_dict.values()))
+
+    voltage_output_df["low_nodes"] = pd.Series(list(low_voltage_mag_dict.keys()))
+    voltage_output_df["low_Vmag"] = pd.Series(list(low_voltage_mag_dict.values()))
+    voltage_output_df["low_Vang"] = pd.Series(list(low_voltage_ang_dict.values()))
+
+    voltage_output_df["high_nodes"] = pd.Series(list(high_voltage_mag_dict.keys()))
+    voltage_output_df["high_Vmag"] = pd.Series(list(high_voltage_mag_dict.values()))
+    voltage_output_df["high_Vang"] = pd.Series(list(high_voltage_ang_dict.values()))
+
+    voltage_output_df.to_csv('voltage_output.csv', index=False)
 
     # sys.exit()
     ################################################################################

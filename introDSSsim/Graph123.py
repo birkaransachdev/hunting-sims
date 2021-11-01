@@ -17,9 +17,6 @@ def create_graph():
             if not np.isnan(row.iloc[i+1]): 
                 nd_end= int(row[f'TO_{i}'])
                 g.add_edge(nd_start, nd_end)
-
-    # nx.draw(g, with_labels=True, font_weight='bold')
-    # plt.savefig("123NF.png")
     return g
 
 def find_paths(start, end):
@@ -27,10 +24,22 @@ def find_paths(start, end):
     for path in nx.all_simple_paths(g, source=start, target=end):
         return path 
 
-def main():
-    start = 150 
-    end = 4
-    find_paths(start, end)
+def is_in_graph(node):
+    g = create_graph()
+    try:
+        int(node)
+    except ValueError:
+        return False
+
+    if int(node) in list(g.nodes):
+        return True
+    else: 
+        return False
+
+# def main():
+#     start = 150 
+#     end = 4
+#     find_paths(start, end)
     
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
