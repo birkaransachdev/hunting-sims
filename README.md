@@ -7,7 +7,7 @@ This repository provides the setup required to run Over & Undervoltage scenarios
 Users can select which feeder they would like to simulate Over/Undervoltage conditions on.
 
 ## Installation
-
+Using pip/pip3, you should first install the following libraries:
 - networkx
 - pandas
 - re 
