@@ -16,7 +16,8 @@ Using pip/pip3, you should first install the following libraries:
 - numpy
 
 ## Using the Tool
-Run 'cd introDSSsim'
+Navigate into the correct directory by running: 'cd introDSSsim'
+
 Run 'python create_hunting.py' -> this is the file responsible for simulating custom Hunting scenarios.
 
 The program will walked through a series of commands for how to run your desired Hunting scenario, on the feeder of your choice. 
