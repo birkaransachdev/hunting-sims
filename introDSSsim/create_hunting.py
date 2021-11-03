@@ -189,24 +189,27 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     new_entry['actual_high_V'] = actual_high_V
     new_entry['actual_low_V'] = actual_low_V
 
-    print("actual_high_V", actual_high_V)
-    print("actual_low_V", actual_low_V)
+    print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+    print("Overvoltage", actual_high_V)
+    print("Undervoltage", actual_low_V)
+    print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+
 
     if volt_condition == 'o': 
-        if ((actual_high_V - actual_low_V) > 0.075) and actual_low_V < 0.95: 
+        if ((actual_high_V - actual_low_V) > 0.075) and actual_high_V > 1.05:
             ret_val = True
         else: 
             ret_val = False
     elif volt_condition == 'u':
-        if ((actual_high_V - actual_low_V) > 0.075) and actual_high_V > 1.05: 
+        if ((actual_high_V - actual_low_V) > 0.075)  and actual_low_V < 0.95: 
             ret_val = True
         else: 
             ret_val = False
-    # elif volt_condition == 'b':
-    #     if ((actual_high_V - actual_low_V) > 0.075) and (actual_high_V > 1.05 and actual_low_V < 0.95):
-    #         ret_val = True
-    #     else: 
-    #         ret_val = False
+    elif volt_condition == 'b':
+        if ((actual_high_V - actual_low_V) > 0.075) and (actual_high_V > 1.05 and actual_low_V < 0.95):
+            ret_val = True
+        else: 
+            ret_val = False
     if ret_val: 
         output_df = output_df.append(new_entry, ignore_index = True)
         output_df.index.name = 'index'
@@ -279,19 +282,22 @@ def main():
 
     is_hunting = False
     i = 0
+
+    print("\nHunting simulation in progress...\n")
     while not is_hunting:
+        print("Converging...")
         print(f"Running simulation {i}")
         hi_S, lo_S = set_over_under_voltage(high_voltage, low_voltage, high_nodes, low_nodes, pu_voltage, power_factor, feeder_name)
         populate_sigbuilder(high_nodes, low_nodes, hi_S, lo_S, feeder_name)
         results = run(feeder_name, hi_node, lo_node)
 
-        print("Results of hunting are:", results)
+        # print("Results of hunting are:", results)
         is_hunting = hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_nodes, low_nodes, results)
         
         if volt_condition == 'o':
             high_voltage += 0.05
         elif volt_condition == 'u':
-            low_voltage -= 0.05 
+            low_voltage -= 0.05
         i+=1
 
     print(f"Hunting has been found for low node {lo_node} and high node {hi_node}")
