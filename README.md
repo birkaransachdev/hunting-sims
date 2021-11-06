@@ -26,7 +26,7 @@ Step 3) Now the program will walked through a series of commands for how to run 
 2. "Please choose your 1st hunting node:" -> e.g. enter `48` (can be any node number on the feeder you choose)
 3. "Please choose your 2nd hunting node:" -> e.g. enter `83` (any other node on the feeder, distinct from 1st hunting node)
 4. "Do you want an overvoltage, undervoltage, or both?" -> e.g. (type o for overvoltage, u for undervoltage, b for both)
-5. "Do you want to keep previous output (type y to save, n to clear)" -> Tell the program if you'd like to Hunting results from previous simulations
+5. "Do you want to keep previous output (type y to save, n to clear)" -> Tell the program whether you'd like to save or clear Hunting results from previous simulations.
 
 Step 4) The simulation will run to convergence and display the output of the successful over/undervoltage values in the command line. 
 Access the results of simulation the file `hunting_results.csv`.
