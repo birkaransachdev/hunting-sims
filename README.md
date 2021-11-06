@@ -16,7 +16,12 @@ Using pip/pip3, you should first install the following libraries:
 - numpy
 
 ## Using the Tool
-Step 1) Navigate into the correct directory by running: `cd introDSSsim`
+
+### For MacOS users
+Step 1) Once you have cloned the `hunting-sims` directory, navigate into the correct directory by running: `cd introDSSsim`
+
+### For Windows users
+Step 1) <alternate step 1 here>
 
 Step 2) Run the command `python create_hunting.py` in your terminal
 This is the file responsible for simulating custom Hunting scenarios.
