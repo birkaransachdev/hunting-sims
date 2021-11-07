@@ -1,6 +1,6 @@
 # Hunting Simulator
 ## Summary of Tool
-This repository provides the setup required to run Over & Undervoltage scenarios on various distribution feeders.
+This repository provides the setup required to run Over & Undervoltage scenarios on various sizes of distribution feeders.
 
 Users can select which feeder they would like to simulate Over & Undervoltage conditions on. This is a pre-cursor to a power systems phenomenon known as Load-tap Changer Hunting. 
 
