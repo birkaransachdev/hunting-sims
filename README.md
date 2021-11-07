@@ -8,12 +8,12 @@ Users can select which feeder they would like to simulate Over/Undervoltage cond
 
 ## Installation
 Using pip/pip3, you should first install the following libraries:
-- networkx
-- pandas
-- re 
-- opendssdirect
-- matplotlib
-- numpy
+- networkx (run `pip install networkx`)
+- pandas (run `pip install pandas`)
+- re (run `pip install re`)
+- opendssdirect (`pip install OpenDSSDirect.py`)
+- matplotlib (`pip install matplotlib`)
+- numpy (`pip install numpy`)
 
 ## Using the Tool
 
