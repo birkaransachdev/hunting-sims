@@ -1,10 +1,8 @@
 # Hunting Simulator
 ## Summary of Tool
-Hunting Simulations using OpenDSS code
-
 This repository provides the setup required to run Over & Undervoltage scenarios on various distribution feeders.
 
-Users can select which feeder they would like to simulate Over & Undervoltage conditions on.
+Users can select which feeder they would like to simulate Over & Undervoltage conditions on. This is a pre-cursor to a power systems phenomenon known as Load-tap Changer Hunting. 
 
 ## Installation
 Using pip/pip3, you should first install the following libraries:
