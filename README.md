@@ -1,8 +1,6 @@
 # Hunting Simulator
 ## Summary of Tool
-This repository provides the setup required to run Over & Undervoltage scenarios on various sizes of distribution feeders.
-
-Users can select which feeder they would like to simulate Over & Undervoltage conditions on. This is a pre-cursor to a power systems phenomenon known as Load-tap Changer Hunting. 
+This repository provides the codes and setup required to run power-voltage scenarios that result in overvoltages and undervoltages on various sizes of power distribution grids. The voltage scenarios can enable hunting between grid devices, which can result in voltage oscillations.
 
 ## Installation
 Using pip/pip3, you should first install the following libraries:
