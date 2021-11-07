@@ -17,14 +17,11 @@ Using pip/pip3, you should first install the following libraries:
 
 ## Using the Tool
 
-### For MacOS users
-Step 1) Once you have cloned the `hunting-sims` directory, navigate into the correct directory by running: `cd introDSSsim`
-
-### For Windows users
-Step 1) <alternate step 1 here>
+### For MacOS Users
+Step 1)  Navigate into the src directory by running: `cd introDSSsim` in the Command Prompt/Terminal, once you have cloned the `hunting-sims` repository
 
 Step 2) Run the command `python create_hunting.py` in your terminal
-This is the file responsible for simulating custom Hunting scenarios.
+This is the file responsible for creating various Hunting scenarios.
 
 Step 3) Now the program will walked through a series of commands for how to run your desired Hunting scenario, on the feeder of your choice. 
 1. "Please enter your feeder name:" -> e.g. enter `123` or `13bal` (for 123 node feeder and 13 node feeder respectively)
