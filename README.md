@@ -17,7 +17,6 @@ Using pip/pip3, you should first install the following libraries:
 
 ## Using the Tool
 
-### For MacOS Users
 Step 1)  Navigate into the src directory by running: `cd introDSSsim` in the Command Prompt/Terminal, once you have cloned the 
 `hunting-sims` repository.
 
