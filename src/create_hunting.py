@@ -4,8 +4,11 @@ import numpy as np
 from run_powerflow import run
 from graph_util import find_paths, is_in_graph
 import re
+import datetime
 
 is_clear = False
+common_loads_zeroed = False 
+
 def get_feeder_filepath(feeder_name):
     if feeder_name == '13bal':
         folder_name = os.getcwd() + '/IEEE13bal' 
@@ -86,13 +89,23 @@ def set_over_under_voltage(hi_v: int, lo_v:int, hi_nodes:list, lo_nodes: list, p
     return C_hi, C_lo
 
 def populate_sigbuilder(hi_nodes:list, lo_nodes:list, hi_S:list, lo_S:list, feeder: str):
+    global common_loads_zeroed
+    
     prefix = 'LD_'
     vals = {}
-    if hi_nodes[0] == lo_nodes[0]:
-        vals[f'{prefix}{hi_nodes[0]}/P'] = 0
-        vals[f'{prefix}{hi_nodes[0]}/Q'] = 0
-        hi_nodes.pop(0)
-        lo_nodes.pop(0)
+    max_nodelist = max(len(hi_nodes), len(lo_nodes))
+    
+    if not common_loads_zeroed:
+        for i in range(max_nodelist):     
+            if (hi_nodes[0] == lo_nodes[0]):
+                vals[f'{prefix}{hi_nodes[0]}/P'] = 0
+                vals[f'{prefix}{hi_nodes[0]}/Q'] = 0
+                hi_nodes.pop(0)
+                lo_nodes.pop(0)
+            else: 
+                break
+
+    common_loads_zeroed = True
 
     for node in hi_nodes:
         p_val = hi_S[0]/len(hi_nodes)
@@ -148,45 +161,42 @@ def populate_sigbuilder(hi_nodes:list, lo_nodes:list, hi_S:list, lo_S:list, feed
 def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_nodes, low_nodes, results):
     global is_clear
     global volt_condition
-    columns = ['feeder_name', 'high_node', 'low_node', 'high_V', 'low_V', 'actual_high_V', 'actual_low_V',\
-         'high_node_path', 'low_node_path', 'total_high_PQ', 'total_low_PQ', 'hunting_achieved' ]
+    # columns = ['timestamp of run', 'feeder_name', 'high_node', 'low_node', 'high_V', 'low_V', 'high_V (p.u.)', 'low_V (p.u.)',\
+    #      'high_node_path', 'low_node_path', 'total_high_PQ', 'total_low_PQ']
     
-    file_name = 'hunting_results.csv'
-    output_df = pd.read_csv(file_name, index_col='index')
+    file_name = 'hunting_results.xlsx'
+    output_df = pd.read_excel(file_name, index_col = 'index')
+    # , index_col='index')
     if is_clear: 
         output_df.drop(output_df.index, inplace=True)
-    # output_df = pd.read_csv(file_name)
-    # output_df.set_index('index')
+
     # create a new Hunting entry
     new_entry = {}
+    new_entry['timestamp of run'] = datetime.datetime.now()
     new_entry['feeder_name'] = feeder_name
     new_entry['high_node'] = f'Bus_{high_nodes[-1]}'
     new_entry['low_node'] = f'Bus_{low_nodes[-1]}'
     new_entry['high_V'] = high_voltage
     new_entry['low_V'] = low_voltage
-    # new_entry['total_high_PQ'] = hi_S
-    # new_entry['total_low_PQ'] = lo_S
-    # new_entry['high_node_path'] = high_nodes
-    # new_entry['low_node_path'] = low_nodes
     new_entry['num_high_nodes'] = len(high_nodes)
     new_entry['num_low_nodes'] = len(low_nodes)
     
     
-    new_entry['P_per_hi'] = hi_S[0]/ new_entry['num_high_nodes']
-    new_entry['Q_per_hi'] = hi_S[1]/ new_entry['num_high_nodes']
-    new_entry['P_per_lo'] = lo_S[0]/ new_entry['num_low_nodes']
-    new_entry['Q_per_lo'] = lo_S[1]/ new_entry['num_low_nodes']
+    new_entry['P_per_hi (kW)'] = hi_S[0]/ new_entry['num_high_nodes']
+    new_entry['Q_per_hi (kVAR)'] = hi_S[1]/ new_entry['num_high_nodes']
+    new_entry['P_per_lo (kW)'] = lo_S[0]/ new_entry['num_low_nodes']
+    new_entry['Q_per_lo (kVAR)'] = lo_S[1]/ new_entry['num_low_nodes']
 
     # parse results
     actual_high_V = np.mean(results[f'bus_{high_nodes[-1]}']['V_mag'])
     actual_low_V = np.mean(results[f'bus_{low_nodes[-1]}']['V_mag'])
 
-    new_entry['actual_high_V'] = actual_high_V
-    new_entry['actual_low_V'] = actual_low_V
+    new_entry['high_V (p.u.)'] = actual_high_V
+    new_entry['low_V (p.u.)'] = actual_low_V
 
     print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-    print(f"Overvoltage at {new_entry['high_node']}:", round(actual_high_V, 4), "V p.u.")
-    print(f"Undervoltage at {new_entry['low_node']}:", round(actual_low_V, 4), "V p.u.")
+    print(f"Voltage at {new_entry['high_node']}:", round(actual_high_V, 4), "V p.u.")
+    print(f"Voltage at {new_entry['low_node']}:", round(actual_low_V, 4), "V p.u.")
     print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
 
@@ -200,30 +210,29 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
             ret_val = True
         else: 
             ret_val = False
-    elif volt_condition == 'b':
-        if ((actual_high_V - actual_low_V) > 0.075) and (actual_high_V > 1.05 and actual_low_V < 0.95):
-            ret_val = True
-        else: 
-            ret_val = False
     if ret_val: 
         output_df = output_df.append(new_entry, ignore_index = True)
         output_df.index.name = 'index'
-        output_df.to_csv(file_name)
+        output_df.to_excel(file_name)
+            
     return ret_val
 
 def clear():
-    filename = "hunting_results.csv"
-    df = pd.read_csv(filename)
+    filename = "hunting_results.xlsx"
+    df = pd.read_excel(filename)
     column_names = list(df.columns)
     column_names.insert(0, "index")
     df = pd.DataFrame(columns=column_names)
-    df.to_csv(filename)
+    df.to_excel(filename)
     return 
 
 def main():
     global is_clear
     global volt_condition
-    valid_feeder_names = ["13bal", "123"]
+    global common_loads_zeroed
+    common_loads_zeroed = False
+    
+    valid_feeder_names = ["13unb", "123"]
     
     # Feeder name
     feeder_name = input("Please enter your feeder name: ")
@@ -274,21 +283,20 @@ def main():
     # lo_node = 83 #low hunting node
     pu_voltage = 2400 #per unit voltage
     power_factor = 0.9 #grid power factor
-    step_change = 0.05 #change to vary the rate of convergence to Hunting
+    step_change = 0.1 #change to vary the rate of convergence to Hunting
     is_hunting = False
-    
+
     i = 0
     print("\nComputing Hunting Scenario Voltages...\n")
     while not is_hunting:
         print(f"\nSolving Power Flow - Scenario {i}")
-        # print(f"Running simulation {i}")
         hi_S, lo_S = set_over_under_voltage(high_voltage, low_voltage, high_nodes, low_nodes, pu_voltage, power_factor, feeder_name)
         populate_sigbuilder(high_nodes, low_nodes, hi_S, lo_S, feeder_name)
         results = run(feeder_name, hi_node, lo_node)
 
-        # print("Results of hunting are:", results)
         is_hunting = hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_nodes, low_nodes, results)
         
+
         if volt_condition == 'o':
             high_voltage += step_change
         elif volt_condition == 'u':
@@ -296,7 +304,7 @@ def main():
         i+=1
     
     print(f"\nHunting has been found between nodes {lo_node} and {hi_node}!")
-    print(f"\nOpen up 'hunting_results.csv' to view your complete results.")
+    print(f"\nOpen up 'hunting_results.xlsx' to view your complete results.")
 
 if __name__ == "__main__":
     main()

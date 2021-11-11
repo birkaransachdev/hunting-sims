@@ -1,2 +1,2 @@
-index,feeder_name,high_node,low_node,high_V,low_V,actual_high_V,actual_low_V,num_high_nodes,P_per_hi,Q_per_hi,num_low_nodes,P_per_lo,Q_per_lo,hunting_achieved
-0,123,Bus_48,Bus_83,1.2000000000000002,0.9,1.1787256367325434,1.0271137130541859,11,-1050.4246039453335,-508.40550830954146,19,150.75538297363565,72.96560535923966,
+index,timestamp of run,feeder_name,high_node,low_node,high_V,low_V,high_V (p.u.),low_V (p.u.),num_high_nodes,P_per_hi (kW),Q_per_hi (kVAR),num_low_nodes,P_per_lo (kW),Q_per_lo (kVAR)
+0,2021-11-06 19:00:12,123,Bus_48,Bus_83,1.2,0.9,1.115141497,1.021097676,12,-852.844738,-412.7768532,20,133.340537,64.53681991
