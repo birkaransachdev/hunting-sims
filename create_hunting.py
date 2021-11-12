@@ -1,8 +1,8 @@
 import pandas as pd
 import os
 import numpy as np
-from run_powerflow import run
-from graph_util import find_paths, is_in_graph
+from src.run_powerflow import run
+from src.graph_util import find_paths, is_in_graph
 import re
 import datetime
 
@@ -10,12 +10,16 @@ is_clear = False
 common_loads_zeroed = False 
 
 def get_feeder_filepath(feeder_name):
-    if feeder_name == '13bal':
-        folder_name = os.getcwd() + '/IEEE13bal' 
-        impedance_file = folder_name + '/016_GB_IEEE13_balance_all_ver2.xls'
-        load_file = folder_name + '/016_GB_IEEE13_balance_sigBuilder_Q_12_13_norm03_3_1.xlsx'
+    # if feeder_name == '13bal':
+    #     folder_name = os.getcwd() + '/IEEE13bal' 
+    #     impedance_file = folder_name + '/016_GB_IEEE13_balance_all_ver2.xls'
+    #     load_file = folder_name + '/016_GB_IEEE13_balance_sigBuilder_Q_12_13_norm03_3_1.xlsx'
+    if feeder_name == '13unbal':
+        folder_name = os.getcwd() + '/src/IEEE13unb'
+        impedance_file = folder_name + '/001_phasor08_IEEE13.xls'
+        load_file = folder_name + '/001_phasor08_IEEE13_norm03_HIL_7_1.xlsx'
     if feeder_name == '123':
-        folder_name = os.getcwd() + '/IEEE123' 
+        folder_name = os.getcwd() + '/src/IEEE123' 
         impedance_file = folder_name +'/004_GB_IEEE123_OPAL.xls'
         load_file = folder_name + '/004_GB_IEEE123_netload.xlsx'
     return impedance_file, load_file 
@@ -31,6 +35,7 @@ def calculate_impedance(feeder_name: str, nodes: list) -> tuple():
     x_total = 0
     for i in range(len(nodes) - 1):
         line_name = f'LN_{nodes[i]}_{nodes[i+1]}'
+        # print("line_name", line_name)
         if line_name in list(imp_df.ID):
             line_df = imp_df.loc[imp_df.ID == line_name]
             length = float(line_df['Length (length_unit)'])
@@ -72,8 +77,12 @@ def set_over_under_voltage(hi_v: int, lo_v:int, hi_nodes:list, lo_nodes: list, p
     pq_ratio = np.tan(np.arccos(power_factor))
 
     # overvoltage path
-    v_delta_hi = ((1*pu)**2 - (hi_v*2400)**2)/2
+    v_delta_hi = ((1*pu)**2 - (hi_v*pu)**2)/2
     r_hi, x_hi = calculate_impedance(feeder, hi_nodes)
+    # print("r_hi", r_hi, "x_hi", x_hi)
+    # print("v_delta_hi", v_delta_hi)
+    # print("hi_v", hi_v, "pu", pu)
+    # print("hi_nodes", hi_nodes)
     A_hi = np.array([[r_hi,x_hi],[0.484,-1]])
     B_hi = np.array([v_delta_hi,0])
     C_hi = np.linalg.solve(A_hi,B_hi)
@@ -100,8 +109,8 @@ def populate_sigbuilder(hi_nodes:list, lo_nodes:list, hi_S:list, lo_S:list, feed
             if (hi_nodes[0] == lo_nodes[0]):
                 vals[f'{prefix}{hi_nodes[0]}/P'] = 0
                 vals[f'{prefix}{hi_nodes[0]}/Q'] = 0
-                hi_nodes.pop(0)
-                lo_nodes.pop(0)
+                # hi_nodes.pop(0)
+                # lo_nodes.pop(0)
             else: 
                 break
 
@@ -115,7 +124,7 @@ def populate_sigbuilder(hi_nodes:list, lo_nodes:list, hi_S:list, lo_S:list, feed
 
 
     # set 692 to 0 because it's a switch, if 13 node feeder
-    if feeder == '13bal':
+    if (feeder == '13bal'):
         switch_node = 692
         vals[f'{prefix}{switch_node}/P'] = 0
         vals[f'{prefix}{switch_node}/Q'] = 0
@@ -132,10 +141,16 @@ def populate_sigbuilder(hi_nodes:list, lo_nodes:list, hi_S:list, lo_S:list, feed
     load_df = pd.read_excel(filepath)
     load_df = load_df.set_index('Time')
 
+    # 123NF
     if feeder == '123':
-        model_df = pd.read_excel('IEEE123/004_GB_IEEE123_OPAL.xls', sheet_name = 'Bus')
+        model_df = pd.read_excel('src/IEEE123/004_GB_IEEE123_OPAL.xls', sheet_name = 'Bus')
         model_df['Bus_node'] =  model_df['Bus'].apply(lambda x: re.sub(r'_\w','', str(x)))
-        
+    
+    # 13unbal
+    if feeder == '13unbal':
+        model_df = pd.read_excel('src/IEEE13unb/001_phasor08_IEEE13.xls', sheet_name = 'Bus')
+        model_df['Bus_node'] = model_df['Bus'].apply(lambda x: re.sub(r'_\w','', str(x)))
+
     phases = ['_a', '_b', '_c']
     for k, v in vals.items():
         for p in phases:
@@ -232,7 +247,7 @@ def main():
     global common_loads_zeroed
     common_loads_zeroed = False
     
-    valid_feeder_names = ["13unb", "123"]
+    valid_feeder_names = ["13unbal", "123"]
     
     # Feeder name
     feeder_name = input("Please enter your feeder name: ")
@@ -240,18 +255,22 @@ def main():
         feeder_name = input("Please try again: ")
 
     # Hunting nodes
-    sub_node = 150 #substation node
+    if feeder_name == '123':
+        sub_node = 150 #substation node
+    elif feeder_name == '13unbal': 
+        sub_node = 650 #substation node
+
     node_1 = input("Please choose your 1st hunting node: ")
-    while not is_in_graph(node_1):
+    while not is_in_graph(feeder_name, node_1):
         node_1 = input("Please try again: ")
     node_2 = input("Please choose your 2nd hunting node: ")
-    while not is_in_graph(node_2):
+    while not is_in_graph(feeder_name, node_2):
         node_2 = input("Please try again: ")
 
     node_1 = int(node_1)
     node_2 = int(node_2)
-    node_1_path = find_paths(sub_node, node_1)
-    node_2_path = find_paths(sub_node, node_2)
+    node_1_path = find_paths(feeder_name, sub_node, node_1)
+    node_2_path = find_paths(feeder_name, sub_node, node_2)
 
 
     if len(node_1_path) >= len(node_2_path):
