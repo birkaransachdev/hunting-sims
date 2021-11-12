@@ -13,6 +13,8 @@ Using pip/pip3, you should install the following libraries:
 
 ## Using the Tool
 
+Note: This tool currently only works with 3 phase nodes.
+
 Step 1)  Clone this `hunting-sims` repository. Navigate into the src directory by running: `cd introDSSsim` in the Command Prompt/Terminal.
 
 Step 2) Run the command `python create_hunting.py` in your terminal.
