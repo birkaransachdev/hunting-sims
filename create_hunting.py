@@ -5,6 +5,8 @@ from src.run_powerflow import run
 from src.graph_util import find_paths, is_in_graph
 import re
 import datetime
+from UliPlot.XLSX import auto_adjust_xlsx_column_width
+
 
 is_clear = False
 common_loads_zeroed = False 
@@ -185,16 +187,23 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     if is_clear: 
         output_df.drop(output_df.index, inplace=True)
 
+    volt_condition_dict = {'o': 'Overvoltage', 'u': 'Undervoltage', 'b': 'Both'}
+
     # create a new Hunting entry
     new_entry = {}
     new_entry['timestamp of run'] = datetime.datetime.now()
     new_entry['feeder_name'] = feeder_name
+    new_entry['type'] = volt_condition_dict[volt_condition]
     new_entry['high_node'] = f'Bus_{high_nodes[-1]}'
     new_entry['low_node'] = f'Bus_{low_nodes[-1]}'
-    new_entry['high_V'] = high_voltage
-    new_entry['low_V'] = low_voltage
-    new_entry['num_high_nodes'] = len(high_nodes)
-    new_entry['num_low_nodes'] = len(low_nodes)
+    # new_entry['high_V'] = high_voltage
+    # new_entry['low_V'] = low_voltage
+
+
+    # The number of high and low nodes in the path minus the length of the common nodes
+    common_nodes = set(high_nodes).intersection(low_nodes)
+    new_entry['num_high_nodes'] = len(high_nodes) - len(common_nodes)
+    new_entry['num_low_nodes'] = len(low_nodes) - len(common_nodes)
     
     
     new_entry['P_per_hi (kW)'] = hi_S[0]/ new_entry['num_high_nodes']
@@ -206,8 +215,6 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     actual_high_V = np.mean(results[f'bus_{high_nodes[-1]}']['V_mag'])
     actual_low_V = np.mean(results[f'bus_{low_nodes[-1]}']['V_mag'])
 
-    new_entry['high_V (p.u.)'] = actual_high_V
-    new_entry['low_V (p.u.)'] = actual_low_V
 
     print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
     print(f"Voltage at {new_entry['high_node']}:", round(actual_high_V, 4), "V p.u.")
@@ -228,8 +235,10 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     if ret_val: 
         output_df = output_df.append(new_entry, ignore_index = True)
         output_df.index.name = 'index'
-        output_df.to_excel(file_name)
-            
+        # save as Excel and align margins
+        with pd.ExcelWriter(file_name) as writer:
+            output_df.to_excel(writer, sheet_name="Results")
+            auto_adjust_xlsx_column_width(output_df, writer, sheet_name="Results", margin=0)
     return ret_val
 
 def clear():
@@ -311,8 +320,7 @@ def main():
         print(f"\nSolving Power Flow - Scenario {i}")
         hi_S, lo_S = set_over_under_voltage(high_voltage, low_voltage, high_nodes, low_nodes, pu_voltage, power_factor, feeder_name)
         populate_sigbuilder(high_nodes, low_nodes, hi_S, lo_S, feeder_name)
-        results = run(feeder_name, hi_node, lo_node)
-
+        results = run(feeder_name, hi_node, lo_node, high_nodes, low_nodes)
         is_hunting = hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_nodes, low_nodes, results)
         
 

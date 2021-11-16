@@ -3,7 +3,7 @@
 
 # In[35]:
 
-from setup import *
+from src.setup import *
 import opendssdirect as dss
 from dss import *
 import os

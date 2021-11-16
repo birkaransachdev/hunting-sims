@@ -6,8 +6,9 @@ import os
 import numpy as np
 
 
-def create_graph():
-    filepath = os.getcwd() + '/IEEE123/123NF_graph.xlsx'
+def create_graph(feeder):
+    if feeder == '123':
+        filepath = os.getcwd() + '/src/IEEE123/123NF_graph.xlsx'
     g = nx.Graph()
     
     graph_df = pd.read_excel(filepath)
@@ -19,13 +20,13 @@ def create_graph():
                 g.add_edge(nd_start, nd_end)
     return g
 
-def find_paths(start, end):
-    g = create_graph()
+def find_paths(feeder, start, end):
+    g = create_graph(feeder)
     for path in nx.all_simple_paths(g, source=start, target=end):
         return path 
 
-def is_in_graph(node):
-    g = create_graph()
+def is_in_graph(feeder, node):
+    g = create_graph(feeder)
     try:
         int(node)
     except ValueError:
