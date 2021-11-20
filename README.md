@@ -10,6 +10,7 @@ Using pip/pip3, you should install the following libraries:
 - opendssdirect (`pip install OpenDSSDirect.py`)
 - matplotlib (`pip install matplotlib`)
 - numpy (`pip install numpy`)
+- UliPlot (`pip install UliPlot`)
 
 ## Using the Tool
 
