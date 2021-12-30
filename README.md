@@ -29,8 +29,6 @@ Step 3) Now the program will walk through a series of user input requests to set
 Step 4) The simulation will run to convergence and display the output of the successful over/undervoltage values in the command line. 
 Access the outputted results with the `hunting_results.xlsx` file. Consider the common ancestor node (CAN) between the given `high_node` and `low_node`. The nodal power setup that creates the overvoltage or undervoltage is comprised of zero loads from the CAN to the substation, constant loads from high_node to the CAN of value (`P_hi+j Q_hi`), and constant loads from low_node to the CAN of value (`P_lo+j Q_lo`). The rest of the network's PQ bus powers are the default spot loads given by the IEEE: https://cmte.ieee.org/pes-testfeeders/resources/
 
-The image below shows an example of the contents of the `hunting_results.xlsx` file.
+The image below shows an example of what the contents of the `hunting_results.xlsx` file look like:
 
 ![This is an image](https://github.com/birkaransachdev/hunting-sims/blob/main/hunting_results_screenshot.png?raw=true)
-
-https://github.com/birkaransachdev/hunting-sims/blob/main/hunting_results_screenshot.png?raw=true
