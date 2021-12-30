@@ -199,6 +199,8 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     # new_entry['high_V'] = high_voltage
     # new_entry['low_V'] = low_voltage
 
+    
+
 
     # The number of high and low nodes in the path minus the length of the common nodes
     common_nodes = set(high_nodes).intersection(low_nodes)
@@ -215,6 +217,9 @@ def hunting_output(feeder_name, high_voltage, low_voltage, hi_S, lo_S, high_node
     actual_high_V = np.mean(results[f'bus_{high_nodes[-1]}']['V_mag'])
     actual_low_V = np.mean(results[f'bus_{low_nodes[-1]}']['V_mag'])
 
+    # Add actual output voltage to new_entry
+    new_entry['V_hi (V p.u.)'] = round(actual_high_V, 4)
+    new_entry['V_lo (V p.u.)'] = round(actual_low_V, 4)
 
     print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
     print(f"Voltage at {new_entry['high_node']}:", round(actual_high_V, 4), "V p.u.")
@@ -304,7 +309,7 @@ def main():
         high_voltage = 1.1 
         low_voltage = 0.9
     elif volt_condition == 'u':
-        high_voltage = 1.1
+        high_voltage = 1.2
         low_voltage = 0.9
 
     # hi_node = 48 #high hunting node
