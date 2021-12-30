@@ -33,5 +33,4 @@ The image below shows an example of the contents of the `hunting_results.xlsx` f
 
 ![This is an image](https://github.com/birkaransachdev/hunting-sims/blob/main/hunting_results_screenshot.png?raw=true)
 
-
 https://github.com/birkaransachdev/hunting-sims/blob/main/hunting_results_screenshot.png?raw=true
