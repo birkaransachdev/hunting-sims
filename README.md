@@ -1,6 +1,6 @@
 # Hunting Simulator
 ## Summary of Tool
-This repository provides the codes and setup required to run power-voltage scenarios that result in overvoltages and undervoltages on various sizes of power distribution grids. The voltage scenarios can enable hunting between grid devices, which can result in voltage oscillations. As prerequisites to run the code, you will need Python 3 and the power flow program OpenDSS installed.
+This repository provides the code required to run iterations of power flow to arrive at overvoltages and undervoltage situations on various sizes of power distribution grids. The voltage overvoltages and undervoltages can enable hunting between grid devices, which can result in voltage oscillations. As prerequisites to run the code, you will need Python 3 and the power flow program OpenDSS installed.
 
 ## Installation
 Using pip/pip3, you should install the following libraries:
@@ -27,5 +27,5 @@ Step 3) Now the program will walk through a series of user input requests to set
 5. "Do you want to keep previous output (type y to save, n to clear)" -> Tell the program whether you'd like to write the results under previous results (save) or to overwrite them with the latest results (clear).
 
 Step 4) The simulation will run to convergence and display the output of the successful over/undervoltage values in the command line. 
-Access the code outputted results with the file `hunting_results.csv`.
+Access the outputted results with the file `hunting_results.csv`. Consider the common ancestor node (CAN) between the given `high_node` and `low_node`. The nodal power setup that creates the overvoltage or undervoltage is comprised of zero loads from the CAN to the substation, constant loads from high_node to the CAN of value (`P_hi+j Q_hi`), and constant loads from low_node to the CAN of value (`P_lo+j Q_lo`). The rest of the network's PQ bus powers are the default spot loads given by the IEEE: https://cmte.ieee.org/pes-testfeeders/resources/
 
